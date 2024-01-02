@@ -6,7 +6,7 @@ public class Vechal {
     private  String carModel;
     private boolean available;
 
-    public Vechal(String name, String number,String carModel) {
+    public Vechal(String name, String number,boolean available) {
         this.name = name;
         this.number = number;
         this.available = available;

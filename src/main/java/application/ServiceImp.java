@@ -26,7 +26,7 @@ public class ServiceImp implements Service {
             Statement stmt=conn.createStatement();
             ResultSet rs = stmt.executeQuery(q);
             while (rs.next()){
-                Vechal v= new Vechal(rs.getString(1),rs.getString(2),rs.getString(3));
+                Vechal v= new Vechal(rs.getString(1),rs.getString(2),rs.getBoolean(3));
                 ve.add(v);
             }
         } catch (SQLException e) {
@@ -109,6 +109,7 @@ public class ServiceImp implements Service {
 
     @Override
     public double getTimeSto(String name, String carNumber) {
+        double costff = 0;
         String q= "select rental_date,return_date from rented_cars where rented_by_name=? and car_num=?";
         String cost = "update rented_cars set cost_total=? where rented_by_name=? and car_num=?";
         try {
@@ -119,7 +120,7 @@ public class ServiceImp implements Service {
             while (rs.next()){
                 Timestamp rantaldate = rs.getTimestamp(1);
                 Timestamp returndate= rs.getTimestamp(2);
-                double costff= priceCal(rantaldate,returndate,10);
+                costff= priceCal(rantaldate,returndate,10);
                 PreparedStatement pstmtC= conn.prepareStatement(cost);
                 pstmtC.setDouble(1,costff);
                 pstmtC.setString(2,name);
@@ -130,7 +131,7 @@ public class ServiceImp implements Service {
             System.out.println(e);
         }
 
-        return 0;
+        return costff;
     }
 
 }
