@@ -46,23 +46,27 @@ public class ServiceImp implements Service {
         PreparedStatement pstmt2 = null;
         PreparedStatement pstmt3= null;
         try {
-            pstmt3=conn.prepareStatement(notavl);
-            pstmt3.setString(1,number);
-            pstmt3.executeUpdate();
             pstm1 = conn.prepareStatement(deletc);
             pstm1.setString(1,number);
             ResultSet rs=pstm1.executeQuery();
+            pstmt3=conn.prepareStatement(notavl);
+            pstmt3.setString(1,number);
+            pstmt3.executeUpdate();
             while (rs.next()){
                 String carName = rs.getString(1);
                 String cModel = rs.getString(2);
-                pstmt2=conn.prepareStatement(insertc);
-                pstmt2.setString(1,carName);
-                pstmt2.setString(2,cModel);
-                pstmt2.setString(3,name);
-                pstmt2.setString(4,email);
-                pstmt2.setString(5,prof);
-//                pstmt2.setDate(6,Date.valueOf(LocalDate.now()));
-               n= pstmt2.executeUpdate();
+                boolean aval=rs.getBoolean(3);
+                if(aval) {
+                    pstmt2 = conn.prepareStatement(insertc);
+                    pstmt2.setString(1, carName);
+                    pstmt2.setString(2, cModel);
+                    pstmt2.setString(3, name);
+                    pstmt2.setString(4, email);
+                    pstmt2.setString(5, prof);
+                    n = pstmt2.executeUpdate();
+                }else {
+                    System.err.println("veachel not aval");
+                }
             }
         } catch (SQLException e) {
             System.out.println(e);
@@ -74,16 +78,29 @@ public class ServiceImp implements Service {
     public int submitCar(String name, String carNumber) {
         int c=0;
         String cavl= "UPDATE available_cars SET available = true WHERE car_num = ?";
+        String cSub="select * from rented_cars where car_num=?";
         String carT= "update rented_cars set return_date= now() where car_num=? and rented_by_name = ?";
         try {
             PreparedStatement pstmt1=conn.prepareStatement(cavl);
             PreparedStatement pstmt2=conn.prepareStatement(carT);
-            pstmt1.setString(1,carNumber);
-            pstmt2.setString(1,carNumber);
-            pstmt2.setString(2,name);
-            int n= pstmt1.executeUpdate();
-           int e=  pstmt2.executeUpdate();
-            c=e+n;
+            PreparedStatement pstmt3=conn.prepareStatement(cSub);
+            pstmt3.setString(1,carNumber);
+            ResultSet rs=pstmt3.executeQuery();
+            while (rs.next()){
+                Timestamp retuenTime=rs.getTimestamp(8);
+                if (retuenTime==null) {
+                    pstmt1.setString(1, carNumber);
+                    pstmt2.setString(1, carNumber);
+                    pstmt2.setString(2, name);
+                    int n = pstmt1.executeUpdate();
+                    int e = pstmt2.executeUpdate();
+                    c = e + n;
+                }else {
+                    System.out.println("alredy submited");
+                }
+
+            }
+
 
         } catch (SQLException e) {
             System.out.println(e);
